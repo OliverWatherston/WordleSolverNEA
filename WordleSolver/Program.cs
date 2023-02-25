@@ -28,13 +28,12 @@ namespace WordleSolver
                 
             var option = AnsiConsole.Prompt( // use Spectre.Console to create a menu, this is the only external library used in the project
                 new SelectionPrompt<string>()
-                    .Title("Wordle Solver - Menu")
+                    .Title(AsciiArtTitle)
                     .PageSize(4)
                     .AddChoices(new []
                     {
                         "Solver",
                         "Helper",
-                        "Stats",
                         "Quit"
                     }));
 

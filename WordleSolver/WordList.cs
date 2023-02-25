@@ -59,6 +59,11 @@ namespace WordleSolver
                 _words.Remove(word);
             }
         }
+        
+        public bool ContainsWord(string word)
+        {
+            return _words.Contains(word);
+        }
 
         public string GetWordListAsStringOrdered()
         {
