@@ -5,16 +5,13 @@ namespace WordleSolver
 {
     public class Guess
     {
-        public string Word { get; set; }
+        public string Word { get;}
         public string Response { get; set; }
-        public bool Valid { get; set; }
-        private readonly bool _responseExiting = false;
+        private readonly bool _responseExiting;
 
         public Guess(string word)
         {
             Word = word;
-            WordList wordList = new WordList();
-            Valid = wordList.ContainsWord(Word);
 
             do
             {
@@ -27,7 +24,7 @@ namespace WordleSolver
             }
         }
 
-        public bool IsExitReponse()
+        public bool IsExitResponse()
         {
             return _responseExiting;
         }
