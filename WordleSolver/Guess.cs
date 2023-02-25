@@ -16,7 +16,7 @@ namespace WordleSolver
             do
             {
                 AskForResponse();
-            } while (ValidateResponse() && Response != "EXIT");
+            } while (ValidateResponse() && Response != "EXIT"); // check if the response is valid or if the user wants to exit
             
             if (Response == "EXIT")
             {
@@ -37,12 +37,12 @@ namespace WordleSolver
         private void AskForResponse()
         {
             Console.Write("Response: ");
-            Response = Console.ReadLine()?.ToUpper();
+            Response = Console.ReadLine()?.ToUpper(); // get the response from the user and convert it to uppercase (using null conditional operator to avoid null reference exceptions)
         }
 
         private bool ValidateResponse()
         {
-            return String.IsNullOrEmpty(Response) || !Regex.IsMatch(Response, @"\b[GYX]{5}\b");
-        }
+            return String.IsNullOrEmpty(Response) || !Regex.IsMatch(Response, @"\b[GYX]{5}\b"); // check if the response is empty or if it doesn't match the regex pattern
+        }                                                                                                   // regex pattern matches a string of 5 characters and each character must be either G, Y or X
     }
 }

@@ -6,14 +6,14 @@ namespace WordleSolver
 {
     internal class Program
     {
-        public static Solver CurrentWordleSolver { get; set; }
+        public static Solver CurrentWordleSolver { get; set; } // create a static instance of the solver to make it easier to use in the menu
         static void Main(string[] args)
         {
             Console.Title = "Wordle Solver";
             MainMenu();
         }
 
-        private static void ResetGameState()
+        private static void ResetGameState() // reset game state by making a new solver instance, also clear the console for better user experience
         {
             CurrentWordleSolver = new Solver();
             Console.Clear();
@@ -21,15 +21,15 @@ namespace WordleSolver
 
         private static void MainMenu(bool resetGameState = true)
         {
-            if (resetGameState)
+            if (resetGameState) // control for whether or not to reset the game state (this isn't actually used in any of the menu options, but it's here for future use)
             {
                 ResetGameState();
             }
                 
-            var option = AnsiConsole.Prompt(
+            var option = AnsiConsole.Prompt( // use Spectre.Console to create a menu, this is the only external library used in the project
                 new SelectionPrompt<string>()
                     .Title("Wordle Solver - Menu")
-                    .PageSize(6)
+                    .PageSize(4)
                     .AddChoices(new []
                     {
                         "Solver",
@@ -38,7 +38,7 @@ namespace WordleSolver
                         "Quit"
                     }));
 
-            switch (option)
+            switch (option) // switch statement handles menu options, menu options are handled within their own class called Menu.cs
             {
                 case "Solver":
                     PrintGameInfo();
@@ -53,7 +53,7 @@ namespace WordleSolver
                     break;
             }
             
-            MainMenu();
+            MainMenu(); // recall the main menu as most menu options return to here instead of recalling the main menu
         }
     }
 }
