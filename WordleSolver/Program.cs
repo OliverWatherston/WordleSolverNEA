@@ -1,55 +1,64 @@
 ﻿using System;
-using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
+using Spectre.Console;
+using static WordleSolver.Menu;
 
 namespace WordleSolver
 {
     internal class Program
     {
-        private static Solver _solver = new Solver();
+        public static Solver CurrentWordleSolver { get; set; }
         static void Main(string[] args)
         {
-            Console.WriteLine("Wordle Solver.\nWord match usage described below.\n\nGreen: G\nYellow: Y\nGrey: X\n\n");
             Console.Title = "Wordle Solver";
-
-            SolveWordle();
+            MainMenu();
         }
 
-        static void SolveWordle()
+        private static void ResetGameState()
         {
-            string guess = _solver.MakeGuess();
-            Console.WriteLine($"Guess : {guess.ToUpper()}");
-            
-            Console.Write("Response: ");
+            CurrentWordleSolver = new Solver();
+            Console.Clear();
+        }
 
-            string wordMatch = Console.ReadLine();
-            if (wordMatch == null) // guard case for checking that a value does exist, only checks whether a value is inputted
+        static void MainMenu(bool resetGameState = true)
+        {
+            if (resetGameState)
             {
-                Console.WriteLine("Please enter response from Wordle.");
-                SolveWordle();
-                return; // return to avoid executing the code below
+                ResetGameState();
             }
+                
+            var option = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("Wordle Solver - Menu")
+                    .PageSize(6)
+                    .AddChoices(new []
+                    {
+                        "Solver",
+                        "Helper",
+                        "Stats",
+                        "Quit"
+                    }));
 
-            wordMatch = wordMatch.ToUpper();
-
-            if (!Regex.IsMatch(wordMatch, @"\b[GYX]{5}\b"))
+            switch (option)
             {
-                Console.WriteLine("You did not enter a valid response!");
-                SolveWordle();
-                return;
+                case "Solver":
+                    PrintGameInfo();
+                    SolverMenuOption();
+                    break;
+                case "Helper":
+                    PrintGameInfo();
+                    HelperMenuOption();
+                    break;
+                case "Stats":
+                    StatsMenuOption();
+                    break;
+                case "Quit":
+                    QuitMenuOption();
+                    break;
             }
-
-            Guess guessStruct = new Guess(guess, wordMatch);
             
-            _solver.RemoveWord(guess);
-            
-            _solver.UpdateMasks(guessStruct);
-            
-            _solver.FilterWordList();
-            
-            _solver.UpdateMaskWithRemainingWords();
-
-            SolveWordle();
+            MainMenu();
         }
     }
 }
