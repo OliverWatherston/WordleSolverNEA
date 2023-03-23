@@ -60,6 +60,11 @@ namespace WordleSolver
             // allow use of two different scoring methods, but only positional is currently used
             var scores = usePositional ? _wordScoresPositional : _wordScores;
 
+            if (scores.Count == 0) // avoid error from .Aggregate() if there are no words left to guess
+            {
+                return null;
+            }
+            
             // simply compare all words in the scores dictionary and return the one with the highest score
             return scores.Aggregate((x,y) => x.Value > y.Value ? x : y).Key;
         }
