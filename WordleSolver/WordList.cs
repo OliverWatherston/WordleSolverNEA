@@ -7,18 +7,16 @@ namespace WordleSolver
 {
     public class WordList
     {
-        private string _wordListPath =
+        private readonly string _wordListPath =
             $@"{Path.GetDirectoryName(AppContext.BaseDirectory)}\wordlist.txt";
         private Random _rng = new Random();
-        private readonly List<char> _alphabet = "abcdefghijklmnopqrstuvwxyz".ToList();
+
+        private List<string> _words = new List<string>();
         
-        public List<string> _WordList { get; set; } = new List<string>();
-        
-        public Dictionary<char, int> LetterCount { get; set; } = new Dictionary<char, int>();
-        
+        private Dictionary<char, int> _letterCount = new Dictionary<char, int>();
         private Dictionary<string, int> _wordScores = new Dictionary<string, int>();
 
-        public List<Dictionary<char, int>> _letterCountPositional = new List<Dictionary<char, int>>();
+        private List<Dictionary<char, int>> _letterCountPositional = new List<Dictionary<char, int>>();
         private Dictionary<string, int> _wordScoresPositional = new Dictionary<string, int>();
 
         public WordList()
@@ -31,30 +29,48 @@ namespace WordleSolver
             }
             
             string[] wordListFile = File.ReadAllLines(_wordListPath);
-            _WordList.AddRange(wordListFile);
+            _words.AddRange(wordListFile);
 
             CalculateWordScores();
             CalculateWordScoresPositional();
         }
 
-        private WordList(List<string> wordList, Dictionary<string, int> wordScores, Dictionary<string, int> wordScoresPositional)
+        private WordList(List<string> words, Dictionary<string, int> wordScores, Dictionary<string, int> wordScoresPositional)
         {
-            _WordList = wordList;
+            _words = words;
             _wordScores = wordScores;
             _wordScoresPositional = wordScoresPositional;
         }
 
         public WordList GetCloneOfWordList()
         {
-            return new WordList(_WordList, _wordScores, _wordScoresPositional);
+            return new WordList(_words, _wordScores, _wordScoresPositional);
         }
-
+        
         public int GetWordListLength()
         {
-            return _WordList.Count;
+            return _words.Count;
+        }
+        
+        public void TryRemoveWord(string word)
+        {
+            if (_words.Contains(word))
+            {
+                _words.Remove(word);
+            }
         }
 
-        public string GetHighscoreWord(bool usePositional = false)
+        public string GetWordListAsStringOrdered()
+        {
+            return string.Join(", ", _words.OrderBy(word => _wordScores[word]));
+        }
+        
+        public bool ContainsWord(string word)
+        {
+            return _words.Contains(word);
+        }
+
+        public string CalculateWordMiniMax(bool usePositional = false)
         {
             Dictionary<string, int> scores = usePositional ? _wordScoresPositional : _wordScores;
             KeyValuePair<string, int> bestPair = new KeyValuePair<string, int>();
@@ -70,12 +86,12 @@ namespace WordleSolver
             return bestPair.Key;
         }
 
-        public string GetMaximumUniqueLettersWord(List<char> maximumUniqueLettersWordList)
+        public string CalculateWordMaxUnique(List<char> maximumUniqueLettersWordList)
         {
-            GenerateLetterCount();
+            CalculateLetterCount();
             KeyValuePair<string, int> bestPair = new KeyValuePair<string, int>();
 
-            foreach (var word in _WordList)
+            foreach (var word in _words)
             {
                 int score = 0;
                 foreach (var letter in maximumUniqueLettersWordList)
@@ -95,36 +111,36 @@ namespace WordleSolver
             return bestPair.Key;
         }
 
-        public void GenerateLetterCount()
+        public void CalculateLetterCount()
         {
-            LetterCount = new Dictionary<char, int>();
-            foreach (var letter in _alphabet)
+            _letterCount = new Dictionary<char, int>();
+            foreach (var letter in Globals.Alphabet)
             {
-                LetterCount.Add(letter, 0);
+                _letterCount.Add(letter, 0);
             }
 
-            foreach (var word in _WordList)
+            foreach (var word in _words)
             {
                 foreach (var letter in word)
                 {
-                    LetterCount[letter]++;
+                    _letterCount[letter]++;
                 }
             }
         }
 
-        public void GenerateLetterCountPositional()
+        private void CalculateLetterCountPositional()
         {
             _letterCountPositional.Clear();
             for (int i = 0; i < 5; i++)
             {
                 _letterCountPositional.Add(new Dictionary<char, int>());
-                foreach (var letter in _alphabet)
+                foreach (var letter in Globals.Alphabet)
                 {
                     _letterCountPositional[i].Add(letter, 0);
                 }
             }
 
-            foreach (var word in _WordList)
+            foreach (var word in _words)
             {
                 for (int i = 0; i < word.Length; i++)
                 {
@@ -136,14 +152,14 @@ namespace WordleSolver
 
         public void CalculateWordScores()
         {
-            GenerateLetterCount();
+            CalculateLetterCount();
             _wordScores = new Dictionary<string, int>();
-            foreach (var word in _WordList)
+            foreach (var word in _words)
             {
                 int score = 0;
                 foreach (var letter in word)
                 {
-                    score += LetterCount[letter];
+                    score += _letterCount[letter];
                 }
                 _wordScores.Add(word, score);
             }
@@ -151,9 +167,9 @@ namespace WordleSolver
 
         public void CalculateWordScoresPositional()
         {
-            GenerateLetterCountPositional();
+            CalculateLetterCountPositional();
             _wordScoresPositional = new Dictionary<string, int>();
-            foreach (var word in _WordList)
+            foreach (var word in _words)
             {
                 Dictionary<char, int> score = new Dictionary<char, int>();
                 for (int i = 0; i < word.Length; i++)
@@ -176,7 +192,7 @@ namespace WordleSolver
         public void FilterWordListWithMasking(List<List<char>> allowedMask, List<List<char>> mustHaveMask, List<List<char>> forbiddenMask)
         {
             List<string> filteredWordList = new List<string>();
-            foreach (var word in _WordList)
+            foreach (var word in _words)
             {
                 bool found = false;
                 for (int i = 0; i < mustHaveMask.Count; i++)
@@ -212,7 +228,7 @@ namespace WordleSolver
                     
                     if (!found)
                     {
-                        foreach (var letter in _alphabet)
+                        foreach (var letter in Globals.Alphabet)
                         {
                             int count = word.Count(x => x == letter);
                             if (!(allowedMask[count].Contains(letter)))
@@ -230,7 +246,25 @@ namespace WordleSolver
                 }
             }
 
-            _WordList = filteredWordList;
+            _words = filteredWordList;
+        }
+
+        public void UpdateMaskWithRemainingWords(List<List<char>> allowedMask)
+        {
+            CalculateLetterCount();
+            foreach (var letterCountPair in _letterCount)
+            {
+                if (letterCountPair.Value == 0)
+                {
+                    for (int i = 1; i < 3; i++)
+                    {
+                        if (allowedMask[i].Contains(letterCountPair.Key))
+                        {
+                            allowedMask[i].Remove(letterCountPair.Key);
+                        }
+                    }
+                }
+            }
         }
     }
 }

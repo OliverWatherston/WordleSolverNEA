@@ -6,9 +6,8 @@ namespace WordleSolver
 {
     public class Solver
     {
-        public WordList _remainingWordList = new WordList();
-        private readonly List<char> _alphabet = "abcdefghijklmnopqrstuvwxyz".ToList();
-        
+        private WordList _remainingWordList = new WordList();
+
         private List<List<char>> _requiredMask = new List<List<char>>();
         private List<List<char>> _forbiddenMask = new List<List<char>>();
         private List<List<char>> _allowedMask = new List<List<char>>();
@@ -26,14 +25,14 @@ namespace WordleSolver
 
                 var allowedMask = _allowedMask[i];
 
-                foreach (var c in _alphabet)
+                foreach (var letter in Globals.Alphabet)
                 {
-                    allowedMask.Add(c);
+                    allowedMask.Add(letter);
                 }
             }
         }
 
-        public void FilterWordList()
+        private void FilterWordList()
         {
             _remainingWordList.FilterWordListWithMasking(_allowedMask, _requiredMask, _forbiddenMask);
         }
@@ -43,7 +42,7 @@ namespace WordleSolver
             return word.Count(c => "aeiou".Contains(Char.ToLower(c)));
         }
 
-        public string UseAlreadyFoundPositions()
+        private string UseAlreadyFoundPositions()
         {
             List<List<char>> mustHaveMask = new List<List<char>>();
             List<List<char>> forbiddenMask = _requiredMask.ConvertAll(mask => new List<char>(mask));
@@ -63,7 +62,7 @@ namespace WordleSolver
                 }
             }
 
-            List<char> priorityLetters = _allowedMask[1].Except(alreadyUsed).ToList();
+            List<char> priorityLetters = _allowedMask[0].Except(alreadyUsed).ToList();
             List<char> lettersForAllowedMask = new List<char>();
             if (CountVowels(string.Join("", priorityLetters)) == 0)
             {
@@ -92,17 +91,17 @@ namespace WordleSolver
                 }
             }
             
-            foreach (var c in _alphabet)
+            foreach (var letter in Globals.Alphabet)
             {
-                allowedMask[0].Add(c);
+                allowedMask[0].Add(letter);
             }
 
             WordList tempWordList = _remainingWordList.GetCloneOfWordList();
 
             tempWordList.FilterWordListWithMasking(allowedMask, mustHaveMask, forbiddenMask);
-            if (tempWordList._WordList.Count > 0)
+            if (tempWordList.GetWordListLength() > 0)
             {
-                return tempWordList.GetMaximumUniqueLettersWord(priorityLetters);
+                return tempWordList.CalculateWordMaxUnique(priorityLetters);
             }
 
             return "";
@@ -123,7 +122,7 @@ namespace WordleSolver
             _remainingWordList.CalculateWordScores();
             _remainingWordList.CalculateWordScoresPositional();
 
-            return _remainingWordList.GetHighscoreWord(true);
+            return _remainingWordList.CalculateWordMiniMax(true);
         }
 
         private void UpdateMustHaveMask(Guess guess)
@@ -214,36 +213,37 @@ namespace WordleSolver
             }
         }
 
-        public void UpdateMasks(Guess guess)
+        private void UpdateMasks(Guess guess)
         {
             UpdateMustHaveMask(guess);
             UpdateForbiddenMask(guess);
             UpdateAllowedMask(guess);
         }
 
-        public void UpdateMaskWithRemainingWords()
+        private void UpdateMaskWithRemainingWords()
         {
-            _remainingWordList.GenerateLetterCount();
-            foreach (var letterCountPair in _remainingWordList.LetterCount)
-            {
-                if (letterCountPair.Value == 0)
-                {
-                    for (int i = 1; i < 3; i++)
-                    {
-                        if (_allowedMask[i].Contains(letterCountPair.Key))
-                        {
-                            _allowedMask[i].Remove(letterCountPair.Key);
-                        }
-                    }
-                }
-            }
+            _remainingWordList.UpdateMaskWithRemainingWords(_allowedMask);
         }
 
-        public void RemoveWord(string word)
+        private void RemoveWord(string word)
         {
-            if (_remainingWordList._WordList.Contains(word))
+            _remainingWordList.TryRemoveWord(word);
+        }
+
+        public void UpdateSolver(Guess guess)
+        {
+            RemoveWord(guess.Word);
+            
+            UpdateMasks(guess);
+            
+            FilterWordList();
+            
+            UpdateMaskWithRemainingWords();
+
+            if (_remainingWordList.GetWordListLength() <= 20)
             {
-                _remainingWordList._WordList.Remove(word);
+                _remainingWordList.CalculateWordScores();
+                Console.WriteLine(_remainingWordList.GetWordListAsStringOrdered());
             }
         }
     }
