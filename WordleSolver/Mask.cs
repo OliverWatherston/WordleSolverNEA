@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace WordleSolver
 {
-    public class Mask : List<char>
+    public class Mask
     {
         private List<List<char>> _mask = new List<List<char>>();
         public Mask(int size)
