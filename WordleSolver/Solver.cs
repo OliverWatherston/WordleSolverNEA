@@ -22,7 +22,8 @@ namespace WordleSolver
         
         private static int CountVowels(string word)
         {
-            return word.Count(letter => Globals.Vowels.Contains(Char.ToLower(letter))); // count the number of vowels in a word by checking a condition on count for if the letter is in our vowel character list
+            // count the number of vowels in a word by checking a condition on count for if the letter is in our vowel character list
+            return word.Count(letter => Globals.Vowels.Contains(Char.ToLower(letter)));
         }
 
         private void FilterWordList()
@@ -33,11 +34,6 @@ namespace WordleSolver
         public bool HasGuessesRemaining()
         {
             return _remainingWordList.GetWordListLength() > 0; // check if there are any words left in the word list
-        }
-        
-        public bool IsWordInWordList(string word)
-        {
-            return _remainingWordList.ContainsWord(word); // check if the word is in the word list
         }
 
         private string UseAlreadyFoundPositions()
@@ -140,30 +136,7 @@ namespace WordleSolver
                 }
             }
         }
-
-        private void HandleAllowedMaskUpdate(char feedbackLetter, List<char> guessFeedbackLetters)
-        {
-            if (guessFeedbackLetters.Contains('X'))
-            {
-                var allowedCount = guessFeedbackLetters.Count - guessFeedbackLetters.Count(x => x == 'X');
-                for (var i = allowedCount + 1; i < 4; i++)
-                {
-                    _allowedMask.RemoveFromPositionMask(i, feedbackLetter);
-                }
-            }
-
-            if (!(guessFeedbackLetters.Contains('Y') || guessFeedbackLetters.Contains('G')))
-            {
-                return;
-            }
-            
-            var requiredCount = guessFeedbackLetters.Count(x => x == 'Y') + guessFeedbackLetters.Count(x => x == 'G');
-            for (var i = 0; i < requiredCount; i++)
-            {
-                _allowedMask.RemoveFromPositionMask(i, feedbackLetter);
-            }
-        }
-
+        
         private void UpdateAllowedMask(Guess guess)
         {
             var feedbackLetterGuessRelation = new Dictionary<char, List<char>>();
@@ -177,6 +150,29 @@ namespace WordleSolver
             foreach (var pair in feedbackLetterGuessRelation) // this updates our allowed mask based on the guess
             {
                 HandleAllowedMaskUpdate(pair.Key, pair.Value);
+            }
+        }
+
+        private void HandleAllowedMaskUpdate(char guessLetter, List<char> guessFeedbackLetters)
+        {
+            if (guessFeedbackLetters.Contains('X'))
+            {
+                var allowedCount = guessFeedbackLetters.Count - guessFeedbackLetters.Count(x => x == 'X');
+                for (var i = allowedCount + 1; i < 4; i++)
+                {
+                    _allowedMask.RemoveFromPositionMask(i, guessLetter);
+                }
+            }
+
+            if (!(guessFeedbackLetters.Contains('Y') || guessFeedbackLetters.Contains('G')))
+            {
+                return;
+            }
+            
+            var requiredCount = guessFeedbackLetters.Count(x => x == 'Y') + guessFeedbackLetters.Count(x => x == 'G');
+            for (var i = 0; i < requiredCount; i++)
+            {
+                _allowedMask.RemoveFromPositionMask(i, guessLetter);
             }
         }
 

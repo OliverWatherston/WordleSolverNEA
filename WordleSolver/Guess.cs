@@ -17,7 +17,8 @@ namespace WordleSolver
             {
                 CheckIfFeedbackInvalid();
                 GetFeedbackFromUser();
-            } while (ValidateFeedback() && Feedback != "EXIT"); // check if the response is valid or if the user wants to exit
+            } while (ValidateFeedback() && Feedback != "EXIT"); 
+            // check if the response is valid or if the user wants to exit
             
             if (Feedback == "EXIT")
             {
@@ -51,7 +52,9 @@ namespace WordleSolver
 
         private bool ValidateFeedback()
         {
-            return string.IsNullOrEmpty(Feedback) || !Regex.IsMatch(Feedback, @"\b[GYX]{5}\b"); // check if the response is empty or if it doesn't match the regex pattern
-        }                                                                                                   // regex pattern matches a string of 5 characters and each character must be either G, Y or X
+            // check if the response is empty or if it doesn't match the regex pattern
+            // regex pattern matches a string of 5 characters and each character must be either G, Y or X
+            return string.IsNullOrEmpty(Feedback) || !Regex.IsMatch(Feedback, @"\b[GYX]{5}\b"); 
+        }
     }
 }

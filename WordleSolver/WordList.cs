@@ -11,7 +11,7 @@ namespace WordleSolver
             $@"{Path.GetDirectoryName(AppContext.BaseDirectory)}\wordlist.txt";
 
         private List<string> _words = new List<string>();
-        
+
         private Dictionary<char, int> _letterCount = new Dictionary<char, int>();
         private Dictionary<string, int> _wordScores = new Dictionary<string, int>();
 
@@ -27,8 +27,7 @@ namespace WordleSolver
                 Environment.Exit(0);
             }
             
-            string[] wordListFile = File.ReadAllLines(_wordListPath); // assign word list to the string list _words
-            _words.AddRange(wordListFile);
+            _words.AddRange(File.ReadAllLines(_wordListPath)); // assign word list to the string list _words
 
             CalculateAllWordScores();
         }
@@ -58,40 +57,39 @@ namespace WordleSolver
 
         public string CalculateBestGuessWordMiniMax(bool usePositional = true)
         {
-            var scores = usePositional ? _wordScoresPositional : _wordScores; // allow use of two different scoring methods, but only positional is currently used
-            var bestPair = new KeyValuePair<string, int>();
+            // allow use of two different scoring methods, but only positional is currently used
+            var scores = usePositional ? _wordScoresPositional : _wordScores;
 
-            foreach (var word in scores) // simply compare all words in the scores dictionary and return the one with the highest score
-            {
-                if (word.Value > bestPair.Value)
-                {
-                    bestPair = word;
-                }
-            }
-
-            return bestPair.Key;
+            // simply compare all words in the scores dictionary and return the one with the highest score
+            return scores.Aggregate((x,y) => x.Value > y.Value ? x : y).Key;
         }
         
         private static int IsLetterInWord(char letter, string word)
         {
             return word.Contains(letter) ? 1 : 0;
         }
+        
+        private static int GetWordPriorityScore(List<char> priorityLetters, string word)
+        {
+            return priorityLetters.Sum(letter => IsLetterInWord(letter, word));
+        }
+
+        private static string ReturnHighestScoringWordPositional(List<char> priorityLetters, string highestScoringWord, string currentWord)
+        {
+            var highestScoringWordScore = GetWordPriorityScore(priorityLetters, highestScoringWord);
+            var currentWordScore = GetWordPriorityScore(priorityLetters, currentWord);
+            
+            if (currentWordScore > highestScoringWordScore)
+            {
+                return currentWord;
+            }
+
+            return highestScoringWord;
+        }
 
         public string CalculateReuseBestGuessWordUsingMinimax(List<char> priorityLetters)
         {
-            CalculateLetterCountNormal();
-            var bestPair = new KeyValuePair<string, int>();
-
-            foreach (var word in _words)
-            {
-                var score = priorityLetters.Sum(c => IsLetterInWord(c, word));
-                if (score > bestPair.Value)
-                {
-                    bestPair = new KeyValuePair<string, int>(word, score);
-                }
-            }
-
-            return bestPair.Key;
+            return _words.Aggregate((x,y) => ReturnHighestScoringWordPositional(priorityLetters, x, y));
         }
 
         private void CalculateLetterCountNormal()
@@ -105,7 +103,8 @@ namespace WordleSolver
 
             foreach (var word in _words)
             {
-                foreach (var letter in word.Distinct().ToList()) // count the number of times each letter appears in the word list
+                // count the number of times each letter appears in the word list
+                foreach (var letter in word.Distinct().ToList())
                 {
                     _letterCount[letter]++;
                 }
@@ -115,10 +114,12 @@ namespace WordleSolver
         private void CalculateLetterCountPositional()
         {
             _letterCountPositional = new List<Dictionary<char, int>>();
-            for (var i = 0; i < 5; i++) // initialise the dictionary for each position in the word list
+            // initialise the dictionary for each position in the word list
+            for (var i = 0; i < 5; i++) 
             {
                 _letterCountPositional.Add(new Dictionary<char, int>());
-                foreach (var letter in Globals.Alphabet) // initialise the dictionary for each letter in the alphabet
+                // initialise the dictionary for each letter in the alphabet
+                foreach (var letter in Globals.Alphabet) 
                 {
                     _letterCountPositional[i].Add(letter, 0);
                 }
@@ -126,7 +127,8 @@ namespace WordleSolver
 
             foreach (var word in _words)
             {
-                for (var i = 0; i < word.Length; i++) // count the number of times each letter appears in each position in the word list
+                // count the number of times each letter appears in each position in the word list
+                for (var i = 0; i < word.Length; i++) 
                 {
                     var letter = word[i];
                     _letterCountPositional[i][letter]++;
@@ -144,7 +146,9 @@ namespace WordleSolver
         {
             CalculateLetterCountNormal();
             _wordScores = new Dictionary<string, int>();
-            foreach (var word in _words) // score each word in the word list by adding the number of times each letter appears in the word list, this is the basis for the minimax algorithm
+            // score each word in the word list by adding the number of times each letter appears in the word list
+            // this is the basis for the minimax algorithm
+            foreach (var word in _words)
             {
                 _wordScores.Add(word, word.Sum(letter => _letterCount[letter]));
             }
@@ -159,22 +163,25 @@ namespace WordleSolver
                 if (!score.ContainsKey(letter))
                 {
                     score[letter] = _letterCountPositional[i][letter];
+                    continue;
                 }
-                else
-                {
-                    score[letter] = Math.Max(score[letter], _letterCountPositional[i][letter]); // if the letter appears more than once in the word, only use the highest score for that letter
-                    // this is to reduce the chance of the algorithm picking a word that has a letter that appears more than once
-                }
+                
+                // if the letter appears more than once in the word, only use the highest score for that letter
+                // reduces the chance of the algorithm picking a word that has a letter that appears more than once
+                score[letter] = Math.Max(score[letter], _letterCountPositional[i][letter]);
             }
 
-            _wordScoresPositional[word] = score.Values.Sum(); // add the scores for each letter in the word to get the total score for the word
+            // add the scores for each letter in the word to get the total score for the word
+            _wordScoresPositional[word] = score.Values.Sum(); 
         }
 
         private void CalculateWordScoresPositional()
         {
             CalculateLetterCountPositional();
             _wordScoresPositional = new Dictionary<string, int>();
-            foreach (var word in _words) // score each word in the word list by adding the number of times each letter appears in that position in the word list, this is the basis for the positional minimax algorithm
+            // score each word in the word list by adding the number of times each letter appears in that position
+            // this is the basis for the positional minimax algorithm
+            foreach (var word in _words)
             {
                 HandleWordScoringPositional(word);
             }
@@ -199,12 +206,9 @@ namespace WordleSolver
             for (var i = 0; i < forbiddenMask.GetMask().Count; i++)
             {
                 var forbiddenLetters = forbiddenMask.GetIndex(i);
-                foreach (var forbiddenLetter in forbiddenLetters) // check if the word contains any of the forbidden letters
+                if (forbiddenLetters.Contains(word[i]))
                 {
-                    if (word[i] == forbiddenLetter)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -213,7 +217,8 @@ namespace WordleSolver
         
         private static bool CheckWordAgainstAllowedMask(string word, Mask allowedMask)
         {
-            foreach (var letter in Globals.Alphabet) // check if the word contains any letters that are not allowed in the allowed mask
+            // check if the word contains any letters that are not allowed in the allowed mask
+            foreach (var letter in Globals.Alphabet)
             {
                 var count = word.Count(x => x == letter);
                 if (!allowedMask.GetIndex(count).Contains(letter))
@@ -246,7 +251,8 @@ namespace WordleSolver
         public void UpdateMaskWithRemainingWords(Mask allowedMask)
         {
             CalculateLetterCountNormal();
-            foreach (var letterCountPair in _letterCount) // remove any letters from the allowed mask that are not in the remaining words
+            // remove any letters from the allowed mask that are not in the remaining words
+            foreach (var letterCountPair in _letterCount)
             {
                 if (letterCountPair.Value != 0)
                 {

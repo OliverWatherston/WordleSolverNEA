@@ -34,11 +34,6 @@ namespace WordleSolver
             return _mask;
         }
 
-        public void CopyOtherMask(Mask mask)
-        {
-            _mask = mask.GetMask().ConvertAll(positionMask => new List<char>(positionMask));
-        }
-
         public IEnumerable<char> GetAllUnique()
         {
             // we use and add to a hashset since each value in a hashset MUST be unique, this means we do not have to check for unique values ourselves
@@ -52,6 +47,11 @@ namespace WordleSolver
         public List<char> GetIndex(int index)
         {
             return _mask[index];
+        }
+        
+        public void CopyOtherMask(Mask mask)
+        {
+            _mask = mask.GetMask().ConvertAll(positionMask => new List<char>(positionMask));
         }
 
         public int GetCountOfAllPositionMasks()
