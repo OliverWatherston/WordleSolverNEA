@@ -6,6 +6,7 @@ namespace WordleSolver
 {
     public class Menu
     {
+        private static readonly WordList _helperWordList = new WordList(); // clean wordlist to be used by the helper
         
         public static void PrintGameInfo()
         {
@@ -68,7 +69,7 @@ namespace WordleSolver
                     
                 Console.Write("\nGuess : ");
                 bestGuess = Console.ReadLine()?.ToLower();
-            } while (!CurrentWordleSolver.IsWordInWordList(bestGuess));
+            } while (!_helperWordList.ContainsWord(bestGuess));
             
             return bestGuess;
         }
