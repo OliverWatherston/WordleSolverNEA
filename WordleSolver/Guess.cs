@@ -6,21 +6,20 @@ namespace WordleSolver
     public class Guess
     {
         public string Word { get;}
-        public string Response { get; set; }
-        public bool IsWordInWordList { get; set; }
+        public string Feedback { get; private set; }
         private readonly bool _responseExiting;
 
         public Guess(string word)
         {
             Word = word;
-            IsWordInWordList = new WordList().ContainsWord(word);
 
             do
             {
-                AskForResponse();
-            } while (ValidateResponse() && Response != "EXIT"); // check if the response is valid or if the user wants to exit
+                CheckIfFeedbackInvalid();
+                GetFeedbackFromUser();
+            } while (ValidateFeedback() && Feedback != "EXIT"); // check if the response is valid or if the user wants to exit
             
-            if (Response == "EXIT")
+            if (Feedback == "EXIT")
             {
                 _responseExiting = true;
             }
@@ -31,20 +30,28 @@ namespace WordleSolver
             return _responseExiting;
         }
 
-        public bool CheckIfResponseIsCorrect()
+        public bool IsSolved()
         {
-            return Response == "GGGGG";
+            return Feedback == "GGGGG";
         }
 
-        private void AskForResponse()
+        private void CheckIfFeedbackInvalid()
+        {
+            if (Feedback != null)
+            {
+                Console.WriteLine("Invalid response, please try again.\n");
+            }
+        }
+
+        private void GetFeedbackFromUser()
         {
             Console.Write("Response: ");
-            Response = Console.ReadLine()?.ToUpper(); // get the response from the user and convert it to uppercase (using null conditional operator to avoid null reference exceptions)
+            Feedback = Console.ReadLine()?.ToUpper(); // get the response from the user and convert it to uppercase (using null conditional operator to avoid null reference exceptions)
         }
 
-        private bool ValidateResponse()
+        private bool ValidateFeedback()
         {
-            return String.IsNullOrEmpty(Response) || !Regex.IsMatch(Response, @"\b[GYX]{5}\b"); // check if the response is empty or if it doesn't match the regex pattern
+            return string.IsNullOrEmpty(Feedback) || !Regex.IsMatch(Feedback, @"\b[GYX]{5}\b"); // check if the response is empty or if it doesn't match the regex pattern
         }                                                                                                   // regex pattern matches a string of 5 characters and each character must be either G, Y or X
     }
 }

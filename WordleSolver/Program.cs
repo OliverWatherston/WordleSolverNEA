@@ -6,8 +6,8 @@ namespace WordleSolver
 {
     internal class Program
     {
-        public static Solver CurrentWordleSolver { get; set; } // create a static instance of the solver to make it easier to use in the menu
-        static void Main(string[] args)
+        public static Solver CurrentWordleSolver { get; private set; } // create a static instance of the solver to make it easier to use in the menu
+        private static void Main(string[] args)
         {
             Console.Title = "Wordle Solver";
             MainMenu();
@@ -19,24 +19,8 @@ namespace WordleSolver
             Console.Clear();
         }
 
-        private static void MainMenu(bool resetGameState = true)
+        private static void HandleMenuOption(string option)
         {
-            if (resetGameState) // control for whether or not to reset the game state (this isn't actually used in any of the menu options, but it's here for future use)
-            {
-                ResetGameState();
-            }
-                
-            var option = AnsiConsole.Prompt( // use Spectre.Console to create a menu, this is the only external library used in the project
-                new SelectionPrompt<string>()
-                    .Title(AsciiArtTitle)
-                    .PageSize(4)
-                    .AddChoices(new []
-                    {
-                        "Solver",
-                        "Helper",
-                        "Quit"
-                    }));
-
             switch (option) // switch statement handles menu options, menu options are handled within their own class called Menu.cs
             {
                 case "Solver":
@@ -51,7 +35,28 @@ namespace WordleSolver
                     QuitMenuOption();
                     break;
             }
+        }
+
+        private static void MainMenu(bool resetGameState = true)
+        {
+            if (resetGameState) // control for whether or not to reset the game state (this isn't actually used in any of the menu options, but it's here for future use)
+            {
+                ResetGameState();
+            }
+                
+            var option = AnsiConsole.Prompt( // use Spectre.Console to create a menu, this is the only external library used in the project
+                new SelectionPrompt<string>()
+                    .Title(Globals.AsciiArtTitle)
+                    .PageSize(4)
+                    .AddChoices(new[]
+                    {
+                        "Solver",
+                        "Helper",
+                        "Quit"
+                    }));
             
+            HandleMenuOption(option); // handle the menu option
+
             MainMenu(); // recall the main menu as most menu options return to here instead of recalling the main menu
         }
     }
