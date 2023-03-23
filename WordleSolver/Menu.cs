@@ -6,14 +6,15 @@ namespace WordleSolver
 {
     public class Menu
     {
-        public static void PrintGameInfo()
-        {
-            Console.WriteLine(@"                          
+        public static string AsciiArtTitle = @"                          
    _ _ _           _ _        _____     _             
   | | | |___ ___ _| | |___   |   __|___| |_ _ ___ ___ 
   | | | | . |  _| . | | -_|  |__   | . | | | | -_|  _|
   |_____|___|_| |___|_|___|  |_____|___|_|\_/|___|_|  
-            ");
+            ";
+        public static void PrintGameInfo()
+        {
+            Console.WriteLine(AsciiArtTitle);
             Console.WriteLine(
                 @"Below is the description of how to operate the Wordle solver, when asked for a 'Response' you should input the response from Wordle as described below.
   Green  :  G
@@ -83,7 +84,7 @@ Please note that if you'd like to exit the solver or helper at any time, you can
             else
             {
                 Console.Write("\nGuess : ");
-                playerOrSolverGuess = Console.ReadLine();
+                playerOrSolverGuess = Console.ReadLine()?.ToLower();
             }
 
             if (String.IsNullOrEmpty(playerOrSolverGuess)) // this check makes sure that the user has inputted a valid guess, if they haven't we can just return to the helper menu
@@ -99,6 +100,13 @@ Please note that if you'd like to exit the solver or helper at any time, you can
             {
                 Console.WriteLine("\nReturning you to the main menu...");
                 Thread.Sleep(1000);
+                return;
+            }
+
+            if (!guess.IsWordInWordList)
+            {
+                Console.WriteLine("The word you have entered is not in the word list!");
+                HelperMenuOption();
                 return;
             }
             

@@ -7,11 +7,13 @@ namespace WordleSolver
     {
         public string Word { get;}
         public string Response { get; set; }
+        public bool IsWordInWordList { get; set; }
         private readonly bool _responseExiting;
 
         public Guess(string word)
         {
             Word = word;
+            IsWordInWordList = new WordList().ContainsWord(word);
 
             do
             {
