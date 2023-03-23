@@ -64,11 +64,6 @@ namespace WordleSolver
         {
             return string.Join(", ", _words.OrderBy(word => _wordScores[word]));
         }
-        
-        public bool ContainsWord(string word)
-        {
-            return _words.Contains(word);
-        }
 
         public string CalculateWordMiniMax(bool usePositional = false)
         {

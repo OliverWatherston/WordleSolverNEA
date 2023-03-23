@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text.RegularExpressions;
 using System.Threading;
 using static WordleSolver.Program;
 
@@ -15,20 +14,22 @@ namespace WordleSolver
   | | | | . |  _| . | | -_|  |__   | . | | | | -_|  _|
   |_____|___|_| |___|_|___|  |_____|___|_|\_/|___|_|  
             ");
-            Console.WriteLine(@"Below is the description of how to operate the Wordle solver, when asked for a 'Response' you should input the response from Wordle as described below.
+            Console.WriteLine(
+                @"Below is the description of how to operate the Wordle solver, when asked for a 'Response' you should input the response from Wordle as described below.
   Green  :  G
   Yellow :  Y
-  Grey   :  X");
+  Grey   :  X
+
+Please note that if you'd like to exit the solver or helper at any time, you can input 'EXIT' as the response.");
         }
         
         public static void SolverMenuOption()
         {
-            
             string solverGuess = CurrentWordleSolver.MakeGuess();
 
             if (String.IsNullOrEmpty(solverGuess))
             {
-                Console.WriteLine("Solver has run out of words to guess!");
+                Console.WriteLine("\nSolver has run out of words to guess!");
                 Console.WriteLine("Press any key to return to the main menu.");
                 Console.ReadKey();
                 return;
@@ -38,17 +39,19 @@ namespace WordleSolver
 
             Guess guess = new Guess(solverGuess);
             
+            if (guess.IsExitResponse())
+            {
+                Console.WriteLine("\nReturning you to the main menu...");
+                Thread.Sleep(1000);
+                return;
+            }
+            
             if (guess.CheckIfResponseIsCorrect())
             {
                 Console.WriteLine("\n\nSolver has solved the Wordle!");
                 Console.WriteLine($"The word was : {solverGuess.ToUpper()}");
                 Console.WriteLine("Press any key to return to the main menu.");
                 Console.ReadKey();
-                return;
-            } else if (guess.IsExitReponse())
-            {
-                Console.WriteLine("\nReturning you to the main menu...");
-                Thread.Sleep(1000);
             }
             else
             {
@@ -59,57 +62,58 @@ namespace WordleSolver
 
         public static void HelperMenuOption()
         {
-            /*PrintGameInfo();
+            Console.Write("\nWould you like to input another word? (Y/n) ");
+            string choice = Console.ReadLine();
+
+            string playerOrSolverGuess;
             
-            Console.WriteLine($"Remaining words : {_solver.GetWordsRemaining()}");
-            if (_solver.GetWordsRemaining() <= 20)
+            if (choice?.ToLower() == "n")
             {
-                Console.WriteLine(_solver.GetWordsString());
-            } 
-            Console.Write("Would you like to input another word? (Y/n) ");
-            string inputNewWord = Console.ReadLine();
-
-            string guess;
-
-            if (inputNewWord?.ToLower() == "n")
-            {
-                guess = _solver.MakeGuess();
-                Console.WriteLine($"\nHelper next guess : {guess.ToUpper()}");
+                playerOrSolverGuess = CurrentWordleSolver.MakeGuess();
+                Console.WriteLine($"\nSolver next guess : {playerOrSolverGuess.ToUpper()}");
+                
+                if (String.IsNullOrEmpty(playerOrSolverGuess))
+                {
+                    Console.WriteLine("\nSolver has run out of words to guess!");
+                    Console.WriteLine("Press any key to return to the main menu.");
+                    Console.ReadKey();
+                    return;
+                }
             }
             else
             {
                 Console.Write("\nGuess : ");
-                guess = Console.ReadLine();
+                playerOrSolverGuess = Console.ReadLine();
             }
-            Console.Write("Response : ");
-            string wordMatch = Console.ReadLine();
-            
-            guess = guess?.ToLower();
-            wordMatch = wordMatch?.ToUpper();
 
-            if (guess == null || wordMatch == null || !Regex.IsMatch(wordMatch, @"\b[GYX]{5}\b") || !_solver.IsWordInWordList(guess))
+            if (String.IsNullOrEmpty(playerOrSolverGuess))
             {
-                Console.WriteLine("You did not enter a valid guess or response!");
+                Console.WriteLine("You did not enter a valid guess!");
                 HelperMenuOption();
-                return; // return to avoid executing the code below
+                return;
+            }
+
+            Guess guess = new Guess(playerOrSolverGuess);
+            
+            if (guess.IsExitResponse())
+            {
+                Console.WriteLine("\nReturning you to the main menu...");
+                Thread.Sleep(1000);
+                return;
             }
             
-            Guess guessStruct = new Guess(guess, wordMatch);
-            
-            _solver.RemoveWord(guess);
-            
-            _solver.UpdateMasks(guessStruct);
-            
-            _solver.FilterWordList();
-            
-            _solver.UpdateMaskWithRemainingWords();
-
-            HelperMenuOption();*/
-        }
-
-        public static void StatsMenuOption()
-        {
-            
+            if (guess.CheckIfResponseIsCorrect())
+            {
+                Console.WriteLine("\n\nYou have solved the Wordle!");
+                Console.WriteLine($"The word was : {playerOrSolverGuess.ToUpper()}");
+                Console.WriteLine("Press any key to return to the main menu.");
+                Console.ReadKey();
+            }
+            else
+            {
+                CurrentWordleSolver.UpdateSolver(guess);
+                HelperMenuOption();
+            }
         }
 
         public static void QuitMenuOption()

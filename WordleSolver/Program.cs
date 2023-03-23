@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Text.RegularExpressions;
-using System.Threading;
 using Spectre.Console;
 using static WordleSolver.Menu;
 
@@ -21,7 +19,7 @@ namespace WordleSolver
             Console.Clear();
         }
 
-        static void MainMenu(bool resetGameState = true)
+        private static void MainMenu(bool resetGameState = true)
         {
             if (resetGameState)
             {
@@ -49,9 +47,6 @@ namespace WordleSolver
                 case "Helper":
                     PrintGameInfo();
                     HelperMenuOption();
-                    break;
-                case "Stats":
-                    StatsMenuOption();
                     break;
                 case "Quit":
                     QuitMenuOption();

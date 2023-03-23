@@ -239,6 +239,8 @@ namespace WordleSolver
             FilterWordList();
             
             UpdateMaskWithRemainingWords();
+            
+            Console.WriteLine($"{_remainingWordList.GetWordListLength()} words remaining.");
 
             if (_remainingWordList.GetWordListLength() <= 20)
             {
